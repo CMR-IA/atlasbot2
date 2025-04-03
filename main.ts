@@ -6,16 +6,18 @@ function GO (list2: any[]) {
         basic.showNumber(1 + index)
         if (text_list[index] == "FWD") {
             MOVE(SR, -1 * SL, 0, 2085)
+            VERIFIER()
             MOVE(-255, 255, 30, 0)
         } else if (text_list[index] == "BWD") {
             MOVE(-1 * SR, SL, 0, 2085)
-            MOVE(SR, -255, 30, 0)
+            VERIFIER()
+            MOVE(255, -255, 30, 0)
         } else if (text_list[index] == "LEFT") {
             MOVE(-1 * SR, -1 * SL, 0, 500)
-            MOVE(SR, -1 * SL, 30, 0)
+            MOVE(255, 255, 30, 0)
         } else if (text_list[index] == "RIGHT") {
             MOVE(SR, SL, 0, 500)
-            MOVE(-1 * SR, SL, 30, 0)
+            MOVE(-255, -255, 30, 0)
         } else if (text_list[index] == "P") {
             MOVE(0, 0, 1000, 0)
         }
@@ -28,9 +30,27 @@ function GO (list2: any[]) {
     music.play(music.stringPlayable("E D G F B A C5 B ", 120), music.PlaybackMode.UntilDone)
     basic.showIcon(IconNames.Happy)
 }
+serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
+    basic.showIcon(IconNames.Heart)
+})
 control.onEvent(EventBusSource.MICROBIT_ID_IO_P8, EventBusValue.MICROBIT_PIN_EVT_FALL, function () {
     STEPR += 1
 })
+function VERIFIER () {
+    if (STEPR - STEPL < -10) {
+        if (SL < 255) {
+            SL += 2
+        } else {
+            SR += -2
+        }
+    } else if (STEPR - STEPL > 10) {
+        if (SR < 255) {
+            SR += 2
+        } else {
+            SL += -2
+        }
+    }
+}
 input.onButtonPressed(Button.AB, function () {
     STEPR = 100
     while (Math.abs(STEPR - STEPL) > 10) {
@@ -38,19 +58,7 @@ input.onButtonPressed(Button.AB, function () {
         motorbit.MotorRunDual(motorbit.Motors.M1, -1 * SR, motorbit.Motors.M2, SL)
         basic.pause(30)
         motorbit.MotorStopAll()
-        if (STEPR - STEPL < -10) {
-            if (SL < 255) {
-                SL += 2
-            } else {
-                SR += -2
-            }
-        } else if (STEPR - STEPL > 10) {
-            if (SR < 255) {
-                SR += 2
-            } else {
-                SL += -2
-            }
-        }
+        VERIFIER()
     }
 })
 makerbit.onTouch(TouchSensor.Any, TouchAction.Touched, function () {
@@ -62,8 +70,8 @@ makerbit.onTouch(TouchSensor.Any, TouchAction.Touched, function () {
         text_list.push("LEFT")
     } else if (makerbit.isTouched(makerbit.touchSensorIndex(TouchSensor.T8))) {
         basic.showString("P")
-        text_list.push("P")
-    } else if (makerbit.isTouched(makerbit.touchSensorIndex(TouchSensor.T9))) {
+        [].push("P")
+    } else if (makerbit.isTouched(-1 * 0)) {
         basic.showIcon(IconNames.SmallHeart)
     } else if (makerbit.isTouched(makerbit.touchSensorIndex(TouchSensor.T10))) {
         basic.showArrow(ArrowNames.North)
@@ -121,8 +129,13 @@ basic.showIcon(IconNames.Happy)
 motorbit.MotorStopAll()
 STEPR = 0
 STEPL = 0
-SR = 240
+SR = 255
 SL = 255
 text_list = []
 pins.setEvents(DigitalPin.P8, PinEventType.Edge)
 pins.setEvents(DigitalPin.P12, PinEventType.Edge)
+serial.redirect(
+SerialPin.P15,
+SerialPin.P16,
+BaudRate.BaudRate115200
+)

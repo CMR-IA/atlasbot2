@@ -81,6 +81,10 @@ makerbit.onTouch(TouchSensor.Any, TouchAction.Touched, function () {
         basic.showIcon(IconNames.No)
         text_list = []
         motorbit.MotorStopAll()
+        music.ringTone(554)
+        basic.pause(500)
+        music.stopAllSounds()
+        basic.showIcon(IconNames.Happy)
     } else if (makerbit.isTouched(makerbit.touchSensorIndex(TouchSensor.T5))) {
         basic.showString("C")
     } else if (makerbit.isTouched(makerbit.touchSensorIndex(TouchSensor.T13))) {
